@@ -46,7 +46,7 @@ all: system-check article_client article_server
 article_client: article.pb.o article.grpc.pb.o article_client.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-article_server: article.pb.o article.grpc.pb.o articleRepository.o article_server.o
+article_server: article.pb.o article.grpc.pb.o article_server.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 # greeter_async_client: helloworld.pb.o helloworld.grpc.pb.o greeter_async_client.o
