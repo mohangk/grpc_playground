@@ -32,7 +32,7 @@
 CXX = g++
 CPPFLAGS += -I/usr/local/include -pthread
 CXXFLAGS += -std=c++11
-LDFLAGS += -L/usr/local/lib -lgrpc++_unsecure -lgrpc -lprotobuf -lpthread -ldl
+LDFLAGS += -L/usr/local/lib -L/usr/local/pgsql/lib -lpq -lgrpc++_unsecure -lgrpc -lprotobuf -lpthread -ldl
 PROTOC = protoc
 GRPC_CPP_PLUGIN = grpc_cpp_plugin
 GRPC_CPP_PLUGIN_PATH ?= `which $(GRPC_CPP_PLUGIN)`
@@ -46,7 +46,7 @@ all: system-check article_client article_server
 article_client: article.pb.o article.grpc.pb.o article_client.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-article_server: article.pb.o article.grpc.pb.o article_server.o
+article_server: article.pb.o article.grpc.pb.o articleRepository.o article_server.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 # greeter_async_client: helloworld.pb.o helloworld.grpc.pb.o greeter_async_client.o

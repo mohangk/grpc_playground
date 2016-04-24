@@ -18,7 +18,7 @@ class ArticleClient {
     ArticleClient(std::shared_ptr<Channel> channel)
       : stub_(ArticleStore::NewStub(channel)) {}
 
-  std::string GetArticle(const int articleId) {
+  Article GetArticle(const int articleId) {
     ArticleRequest articleRequest;
     articleRequest.set_id(articleId);
 
@@ -29,9 +29,10 @@ class ArticleClient {
     Status status = stub_->find(&context, articleRequest, &article);
 
     if(status.ok()) {
-      return article.title();
+      return article;
     } else {
-      return "RPC failed";
+      std::cout << "RPC failed";
+      exit(0);
     }
   }
 
@@ -42,8 +43,10 @@ class ArticleClient {
 int main(int argc, char* argv[]) {
 
   ArticleClient articleClient(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
-  std::string title = articleClient.GetArticle(999);
-  std::cout << "Articl received:" << title << std::endl;
+  Article article = articleClient.GetArticle(999);
+  std::cout << "title:" << article.title() << std::endl;
+  std::cout << "short_desc:" << article.short_desc() << std::endl;
+  std::cout << "content_body:" << article.content_body() << std::endl;
 
   return 0;
 }
