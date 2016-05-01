@@ -13,8 +13,10 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
 using publishing::Article;
-using publishing::ArticleRequest;
 using publishing::ArticleStore;
+
+using publishing::ArticleRequest;
+using publishing::ArticlesForPeriodRequest;
 
 //TODO: split the database access to a separate class
 PGconn     *conn;
@@ -38,10 +40,47 @@ void populateArticleById(int id, Article* article)
 }
 
 class ArticleStoreServiceImpl final : public ArticleStore::Service {
-  Status find(ServerContext* context, const ArticleRequest* articleRequest, Article* article) override {
+  Status GetArticle(ServerContext* context, const ArticleRequest* articleRequest, Article* article) override {
 
     populateArticleById(articleRequest->id(), article);
     return Status::OK;
+  }
+
+
+  Status ArticlesForPeriod(ServerContext* ctx, 
+      const ArticlesForPeriodRequest* r, 
+      grpc::ServerWriter<Article>* w) override {
+
+    PGresult *res = queryArticles(r->category_id(), r->start_timestamp(), r->end_timestamp());
+
+    for(int i=0; i < PQntuples(res); i++) {
+      Article a = Article();
+
+      int id = std::stoi(PQgetvalue(res, i, 0));
+      std::string title(PQgetvalue(res, i, 1));
+      std::string short_desc(PQgetvalue(res, i, 2));
+      std::string content_body(PQgetvalue(res, i, 3));
+
+      a.set_id(id);
+      a.set_title(title);
+      a.set_short_desc(short_desc);
+      a.set_content_body(content_body);
+
+      w->Write(a);
+    }
+
+    return Status::OK;
+  }
+
+
+  PGresult* queryArticles(int category_id, std::string start_timestamp, std::string end_timestamp)
+  {
+    PGresult   *res;
+
+    std::string q("select id, title, short_desc, content_body from articles where publish_date >='" + start_timestamp + "' and publish_date <='" + end_timestamp +"' ");
+    res = exec(conn, q.c_str(),  PGRES_TUPLES_OK);
+
+    return res;
   }
 };
 

@@ -36,18 +36,21 @@ option objc_class_prefix = "Article";
 
 package publishing;
 
-// The greeting service definition.
 service ArticleStore {
-  // Sends a greeting
-  rpc find (ArticleRequest) returns (Article) {}
+  rpc GetArticle (ArticleRequest) returns (Article) {}
+  rpc ArticlesForPeriod(ArticlesForPeriodRequest) returns (stream Article) {}
 }
 
-// The request message containing the user's name.
+message ArticlesForPeriodRequest {
+  int32 category_id = 1;
+  string start_timestamp = 2;
+  string end_timestamp = 3;
+}
+
 message ArticleRequest {
   int32 id = 1;
 }
 
-// The response message containing the greetings
 message Article {
   int32 id = 1;
   string title = 2;
