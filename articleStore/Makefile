@@ -64,7 +64,7 @@ article_server: article.pb.o article.grpc.pb.o article_server.o
 	$(PROTOC) -I $(PROTOS_PATH) --cpp_out=. $<
 
 clean:
-	rm -f *.o *.pb.cc *.pb.h greeter_client greeter_server greeter_async_client greeter_async_server
+	rm -f *.o *.pb.cc *.pb.h article_client article_server greeter_client greeter_server greeter_async_client greeter_async_server
 
 
 # The following is to test your system and ensure a smoother experience.
