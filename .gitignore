@@ -5,3 +5,4 @@ greeter_server
 article_server
 article_client
 tags
+articleStore/env
