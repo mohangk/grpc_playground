@@ -47,9 +47,11 @@ class ArticleStoreServiceImpl final : public ArticleStore::Service {
   }
 
 
-  Status ArticlesForPeriod(ServerContext* ctx, 
-      const ArticlesForPeriodRequest* r, 
+  Status ArticlesForPeriod(ServerContext* ctx,
+      const ArticlesForPeriodRequest* r,
       grpc::ServerWriter<Article>* w) override {
+
+    ctx->set_compression_algorithm(GRPC_COMPRESS_GZIP);
 
     PGresult *res = queryArticles(r->category_id(), r->start_timestamp(), r->end_timestamp());
 
@@ -92,6 +94,12 @@ void RunServer() {
 
   builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
   builder.RegisterService(&service);
+
+  grpc_compression_options options;
+  options.enabled_algorithms_bitset = (1u << GRPC_COMPRESS_ALGORITHMS_COUNT) - 1;
+  options.default_compression_algorithm = GRPC_COMPRESS_GZIP;
+  std::cout << "OPTIONS:" << options.enabled_algorithms_bitset;
+  builder.SetCompressionOptions(options);
 
   std::unique_ptr<Server> server(builder.BuildAndStart());
   std::cout << "Server listening on " << server_address << std::endl;

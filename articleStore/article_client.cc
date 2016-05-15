@@ -51,6 +51,7 @@ class ArticleClient {
 
       auto benchmark_start = std::chrono::high_resolution_clock::now();
 
+      context.set_compression_algorithm(GRPC_COMPRESS_GZIP);
       std::unique_ptr<ClientReader<Article> > reader(stub_->ArticlesForPeriod(&context, r));
 
       auto benchmark_finish_req = std::chrono::high_resolution_clock::now();
