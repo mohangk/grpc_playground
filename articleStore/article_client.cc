@@ -12,6 +12,7 @@ using grpc::ClientContext;
 using grpc::Status;
 using grpc::ClientReader;
 using publishing::Article;
+using publishing::Articles;
 using publishing::ArticleStore;
 
 using publishing::ArticleRequest;
@@ -40,6 +41,47 @@ class ArticleClient {
       }
     }
 
+
+    void ListArticlesBulk(std::string start_timestamp, std::string end_timestamp, int category_id) {
+      Article a;
+      ClientContext context;
+      ArticlesForPeriodRequest r;
+
+      r.set_start_timestamp(start_timestamp);
+      r.set_end_timestamp(end_timestamp);
+      r.set_category_id(188);
+
+      auto benchmark_start = std::chrono::high_resolution_clock::now();
+      context.set_compression_algorithm(GRPC_COMPRESS_GZIP);
+
+      Articles articles;
+
+      Status status = stub_->ArticlesForPeriodBulk(&context, r, &articles);
+
+      auto benchmark_finish_req = std::chrono::high_resolution_clock::now();
+
+      for(int i = 0; i < articles.article_size(); i++) {
+         const Article& a = articles.article(i);
+         std::cout << std::to_string(i) << ":"
+                   << a.id() << " : "
+                   << a.title() << std::endl;
+      }
+
+      auto benchmark_finish = std::chrono::high_resolution_clock::now();
+
+
+      if (status.ok()) {
+        long long complete_req_time = elapsedTime(benchmark_start, benchmark_finish_req);
+        long long complete_time = elapsedTime(benchmark_finish_req, benchmark_finish);
+        std::cout << "Req time:";
+        std::cout << complete_req_time << std::endl;
+        std::cout << "Outuput time:";
+        std::cout << complete_time << std::endl;
+      } else {
+        std::cout << "RPC failed." << std::endl;
+      }
+    }
+
     void ListArticles(std::string start_timestamp, std::string end_timestamp, int category_id) {
       Article a;
       ClientContext context;
@@ -52,7 +94,8 @@ class ArticleClient {
       auto benchmark_start = std::chrono::high_resolution_clock::now();
 
       context.set_compression_algorithm(GRPC_COMPRESS_GZIP);
-      std::unique_ptr<ClientReader<Article> > reader(stub_->ArticlesForPeriod(&context, r));
+
+      std::unique_ptr<ClientReader<Article>> reader(stub_->ArticlesForPeriod(&context, r));
 
       auto benchmark_finish_req = std::chrono::high_resolution_clock::now();
 
@@ -101,18 +144,10 @@ class ArticleClient {
     }
 };
 
-
-// void write_text_to_log_file( const std::string &text )
-// {
-//     std::ofstream log_file(
-//         "log_file.txt", std::ios_base::out | std::ios_base::app );
-//     log_file << text << std::endl;
-// }
-
 int main(int argc, char* argv[]) {
 
   ArticleClient articleClient(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
-  articleClient.ListArticles("2016-01-15 00:00:00", "2016-01-31 23:59:59", 188);
+  articleClient.ListArticlesBulk("2016-01-15 00:00:00", "2016-01-31 23:59:59", 188);
   //articleClient.PrintArticle(999);
 
   return 0;

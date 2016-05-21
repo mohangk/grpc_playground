@@ -13,6 +13,7 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
 using publishing::Article;
+using publishing::Articles;
 using publishing::ArticleStore;
 
 using publishing::ArticleRequest;
@@ -39,9 +40,22 @@ void populateArticleById(int id, Article* article)
   article->set_content_body(content_body);
 }
 
-class ArticleStoreServiceImpl final : public ArticleStore::Service {
-  Status GetArticle(ServerContext* context, const ArticleRequest* articleRequest, Article* article) override {
+void populateArticleFromRS(Article* a, PGresult *res, int i)
+{
+    int id = std::stoi(PQgetvalue(res, i, 0));
+    std::string title(PQgetvalue(res, i, 1));
+    std::string short_desc(PQgetvalue(res, i, 2));
+    std::string content_body(PQgetvalue(res, i, 3));
 
+    a->set_id(id);
+    a->set_title(title);
+    a->set_short_desc(short_desc);
+    a->set_content_body(content_body);
+}
+
+class ArticleStoreServiceImpl final : public ArticleStore::Service {
+
+  Status GetArticle(ServerContext* context, const ArticleRequest* articleRequest, Article* article) override {
     populateArticleById(articleRequest->id(), article);
     return Status::OK;
   }
@@ -57,23 +71,28 @@ class ArticleStoreServiceImpl final : public ArticleStore::Service {
 
     for(int i=0; i < PQntuples(res); i++) {
       Article a = Article();
-
-      int id = std::stoi(PQgetvalue(res, i, 0));
-      std::string title(PQgetvalue(res, i, 1));
-      std::string short_desc(PQgetvalue(res, i, 2));
-      std::string content_body(PQgetvalue(res, i, 3));
-
-      a.set_id(id);
-      a.set_title(title);
-      a.set_short_desc(short_desc);
-      a.set_content_body(content_body);
-
+      populateArticleFromRS(&a, res, i);
       w->Write(a);
     }
 
     return Status::OK;
   }
 
+  Status ArticlesForPeriodBulk(ServerContext* ctx,
+      const ArticlesForPeriodRequest* r,
+      Articles* articles) override {
+
+    ctx->set_compression_algorithm(GRPC_COMPRESS_GZIP);
+
+    PGresult *res = queryArticles(r->category_id(), r->start_timestamp(), r->end_timestamp());
+
+    for(int i=0; i < PQntuples(res); i++) {
+      Article* a = articles->add_article();
+      populateArticleFromRS(a, res, i);
+    }
+
+    return Status::OK;
+  }
 
   PGresult* queryArticles(int category_id, std::string start_timestamp, std::string end_timestamp)
   {

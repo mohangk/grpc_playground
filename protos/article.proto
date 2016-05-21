@@ -39,6 +39,7 @@ package publishing;
 service ArticleStore {
   rpc GetArticle (ArticleRequest) returns (Article) {}
   rpc ArticlesForPeriod(ArticlesForPeriodRequest) returns (stream Article) {}
+  rpc ArticlesForPeriodBulk(ArticlesForPeriodRequest) returns (Articles) {}
 }
 
 message ArticlesForPeriodRequest {
@@ -56,4 +57,8 @@ message Article {
   string title = 2;
   string short_desc = 3;
   string content_body = 4;
+}
+
+message Articles {
+  repeated Article article = 1;
 }
