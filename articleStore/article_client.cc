@@ -69,14 +69,8 @@ class ArticleClient {
 
       auto benchmark_finish = std::chrono::high_resolution_clock::now();
 
-
       if (status.ok()) {
-        long long complete_req_time = elapsedTime(benchmark_start, benchmark_finish_req);
-        long long complete_time = elapsedTime(benchmark_finish_req, benchmark_finish);
-        std::cout << "Req time:";
-        std::cout << complete_req_time << std::endl;
-        std::cout << "Outuput time:";
-        std::cout << complete_time << std::endl;
+        printTimings(benchmark_start, benchmark_finish_req, benchmark_finish);
       } else {
         std::cout << "RPC failed." << std::endl;
       }
@@ -113,16 +107,12 @@ class ArticleClient {
       Status status = reader->Finish();
 
       if (status.ok()) {
-        long long complete_req_time = elapsedTime(benchmark_start, benchmark_finish_req);
-        long long complete_time = elapsedTime(benchmark_finish_req, benchmark_finish);
-        std::cout << "Req time:";
-        std::cout << complete_req_time << std::endl;
-        std::cout << "Outuput time:";
-        std::cout << complete_time << std::endl;
+        printTimings(benchmark_start, benchmark_finish_req, benchmark_finish);
       } else {
         std::cout << "RPC failed." << std::endl;
       }
     }
+
 
     void PrintArticle(int article_id)
     {
@@ -136,6 +126,18 @@ class ArticleClient {
   private:
 
     std::unique_ptr<ArticleStore::Stub> stub_;
+
+    void printTimings(std::chrono::high_resolution_clock::time_point start, 
+        std::chrono::high_resolution_clock::time_point request_end, 
+        std::chrono::high_resolution_clock::time_point complete)
+    {
+        long long complete_req_time = elapsedTime(start, request_end);
+        long long complete_time = elapsedTime(request_end, complete);
+        std::cout << "Req time:";
+        std::cout << complete_req_time << std::endl;
+        std::cout << "Outuput time:";
+        std::cout << complete_time << std::endl;
+    }
 
     long long elapsedTime(std::chrono::high_resolution_clock::time_point start, std::chrono::high_resolution_clock::time_point end)
     {
