@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
       .throttleFirst(1, TimeUnit.SECONDS)
       .switchMap({
         requestWithNewConnection(addressInput.text.toString(), portInput.text.toString().toInt(),
-          inputCategoryId.text.toString().toInt())
+          inputCategoryId.text.toString().toInt(), startTimestamp.text.toString(), endTimestamp.text.toString())
           .onBackpressureBuffer(10000)
           .map { it.id.toLong() to it.title }
           .onErrorReturn { RecyclerView.NO_ID to it.message }
@@ -50,12 +50,12 @@ class MainActivity : AppCompatActivity() {
 }
 
 fun requestWithNewConnection(ip: String, port: Int,
-  categoryId: Int) = Observable.create<Article> { subscriber ->
+  categoryId: Int, startTimestamp: String, endTimestamp: String) = Observable.create<Article> { subscriber ->
 
   val req = ArticlesForPeriodRequest().apply {
     this.categoryId = categoryId
-    this.startTimestamp = "2000-01-01T00:00:00+00:00"
-    this.endTimestamp = "2017-01-01T00:00:00+00:00"
+    this.startTimestamp = startTimestamp
+    this.endTimestamp = endTimestamp
   }
 
   newStub(ManagedChannelBuilder.forAddress(ip, port).usePlaintext(true).build())
