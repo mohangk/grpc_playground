@@ -147,7 +147,17 @@ class ArticleClient {
 int main(int argc, char* argv[]) {
 
   ArticleClient articleClient(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
-  articleClient.ListArticlesBulk("2016-01-15 00:00:00", "2016-01-31 23:59:59", 188);
+
+  if(argc == 1) {
+    std::string startTimestamp("2016-01-01 00:00:00");
+    std::string endTimestamp("2016-01-15 00:00:00");
+    articleClient.ListArticles(startTimestamp, endTimestamp, 188);
+  } else {
+    std::string startTimestamp(argv[1]);
+    std::string endTimestamp(argv[2]);
+    articleClient.ListArticles(startTimestamp, endTimestamp, 188);
+  }
+
   //articleClient.PrintArticle(999);
 
   return 0;
