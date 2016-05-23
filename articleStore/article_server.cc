@@ -20,16 +20,19 @@ using publishing::ArticleRequest;
 using publishing::ArticlesForPeriodRequest;
 
 //TODO: split the database access to a separate class
-PGconn     *conn;
 
 //handle not found ?
 void populateArticleById(int id, Article* article)
 {
 
+  PGconn     *conn;
   PGresult   *res;
 
+  openConn("dbname=woi_production", &conn);
   std::string q("select title, short_desc, content_body from articles where id = " + std::to_string(id));
-  res = exec(conn, q.c_str(),  PGRES_TUPLES_OK);
+
+  res = PQexec(conn, q.c_str());
+  //res = exec(conn, q.c_str(),  PGRES_TUPLES_OK);
   std::string title(PQgetvalue(res, 0, 0));
   std::string short_desc(PQgetvalue(res, 0, 1));
   std::string content_body(PQgetvalue(res, 0, 2));
@@ -38,6 +41,22 @@ void populateArticleById(int id, Article* article)
   article->set_title(title);
   article->set_short_desc(short_desc);
   article->set_content_body(content_body);
+
+}
+
+PGresult* queryArticles(int category_id, std::string start_timestamp, std::string end_timestamp)
+{
+  PGconn *conn;
+  PGresult   *res;
+
+  openConn("dbname=woi_production", &conn);
+  std::string q("select id, title, short_desc, content_body from articles where publish_date >='" + start_timestamp + "' and publish_date <='" + end_timestamp +"' ");
+
+  res = PQexec(conn, q.c_str());
+  //res = exec(conn, q.c_str(),  PGRES_TUPLES_OK);
+  PQfinish(conn);
+
+  return res;
 }
 
 void populateArticleFromRS(Article* a, PGresult *res, int i)
@@ -75,6 +94,8 @@ class ArticleStoreServiceImpl final : public ArticleStore::Service {
       w->Write(a);
     }
 
+    PQclear(res);
+
     return Status::OK;
   }
 
@@ -91,18 +112,12 @@ class ArticleStoreServiceImpl final : public ArticleStore::Service {
       populateArticleFromRS(a, res, i);
     }
 
+    PQclear(res);
     return Status::OK;
   }
 
-  PGresult* queryArticles(int category_id, std::string start_timestamp, std::string end_timestamp)
-  {
-    PGresult   *res;
 
-    std::string q("select id, title, short_desc, content_body from articles where publish_date >='" + start_timestamp + "' and publish_date <='" + end_timestamp +"' ");
-    res = exec(conn, q.c_str(),  PGRES_TUPLES_OK);
 
-    return res;
-  }
 };
 
 void RunServer() {
@@ -128,7 +143,6 @@ void RunServer() {
 };
 
 int main(int argc, char* argv[]) {
-  openConn("dbname=woi_production", &conn);
 
   RunServer();
   return 0;
