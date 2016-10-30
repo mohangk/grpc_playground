@@ -30,9 +30,9 @@
 #
 
 CXX = g++
-CPPFLAGS += -g -O0 -I/usr/local/include -pthread
+CPPFLAGS += -g -O0 -I/usr/local/include -pthread -fsanitize=address -fno-omit-frame-pointer
 CXXFLAGS += -std=c++11
-LDFLAGS += -L/usr/local/lib -L/usr/local/pgsql/lib -lpq -lgrpc++_unsecure -lgrpc -lprotobuf -lpthread -ldl
+LDFLAGS += -L/usr/local/lib -L/usr/local/pgsql/lib -lpq -lgrpc++_unsecure -lgrpc -lprotobuf -lpthread -ldl  -fsanitize=address
 PROTOC = protoc
 GRPC_CPP_PLUGIN = grpc_cpp_plugin
 GRPC_CPP_PLUGIN_PATH ?= `which $(GRPC_CPP_PLUGIN)`
