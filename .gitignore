@@ -6,3 +6,4 @@ article_server
 article_client
 tags
 articleStore/env
+.DS_Store
