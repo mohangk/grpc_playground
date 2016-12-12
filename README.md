@@ -16,7 +16,9 @@ Ok if you insist.
 
   * C++ [protobuf 3.0](https://github.com/google/protobuf/)   
   * C++ [GRPC](https://github.com/grpc/grpc) libraries.
+  * C++ [sqlpp11](https://github.com/rbock/sqlpp11) and its [Postgres connector](http://github.com/matthijs/sqlpp11-connector-postgresql)
   * Postgres server & relevant libs, header files
+
 
 Currently there are  2 projects here that might be of interest to you.
 

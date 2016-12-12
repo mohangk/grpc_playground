@@ -1,10 +1,20 @@
 # Testing GRPC vs JSON
 
+## DB schema
+
+DDL as articles.sql. Load into PostgreSQL and load in test data. 
+
+## C++ db access layer
+
+Uses the sqlpp11 lib. Code stored in db/. db/articles.h is generated based on sqlpp11 ddl2cpp script as follows.
+
+```
+ ~/path/to/ddl2cpp ./articles.sql ./db/articles DB
+```
+
 ## Python JSON implementation
 
 ### Start python server
-
-
 
 ## Size of payload
 
