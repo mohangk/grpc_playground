@@ -7,6 +7,7 @@
 #include "article.grpc.pb.h"
 
 #include "db.h"
+#include "db/articles_query.h"
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -18,31 +19,6 @@ using publishing::ArticleStore;
 
 using publishing::ArticleRequest;
 using publishing::ArticlesForPeriodRequest;
-
-//TODO: split the database access to a separate class
-
-//handle not found ?
-void populateArticleById(int id, Article* article)
-{
-
-  PGconn     *conn;
-  PGresult   *res;
-
-  openConn("dbname=woi_production", &conn);
-  std::string q("select title, short_desc, content_body from articles where id = " + std::to_string(id));
-
-  res = PQexec(conn, q.c_str());
-  //res = exec(conn, q.c_str(),  PGRES_TUPLES_OK);
-  std::string title(PQgetvalue(res, 0, 0));
-  std::string short_desc(PQgetvalue(res, 0, 1));
-  std::string content_body(PQgetvalue(res, 0, 2));
-
-  article->set_id(id);
-  article->set_title(title);
-  article->set_short_desc(short_desc);
-  article->set_content_body(content_body);
-
-}
 
 PGresult* queryArticles(int category_id, std::string start_timestamp, std::string end_timestamp)
 {
@@ -75,7 +51,9 @@ void populateArticleFromRS(Article* a, PGresult *res, int i)
 class ArticleStoreServiceImpl final : public ArticleStore::Service {
 
   Status GetArticle(ServerContext* context, const ArticleRequest* articleRequest, Article* article) override {
-    populateArticleById(articleRequest->id(), article);
+
+    auto q = ArticlesQuery();
+    q.find(999, article);
     return Status::OK;
   }
 

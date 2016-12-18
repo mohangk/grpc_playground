@@ -49,7 +49,7 @@ test_db: article.pb.o article.grpc.pb.o db/articles_query.o test_db.o
 article_client: article.pb.o article.grpc.pb.o article_client.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-article_server: article.pb.o article.grpc.pb.o article_server.o
+article_server: article.pb.o article.grpc.pb.o db/articles_query.o article_server.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 # greeter_async_client: helloworld.pb.o helloworld.grpc.pb.o greeter_async_client.o
