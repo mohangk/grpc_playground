@@ -1,7 +1,7 @@
 #
 # Copyright 2015, Google Inc.
 # All rights reserved.
-#
+#ll
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
@@ -32,7 +32,7 @@
 CXX = g++
 CPPFLAGS += -g -O0 -I/usr/local/include -pthread -fsanitize=address -fno-omit-frame-pointer
 CXXFLAGS += -std=c++11
-LDFLAGS += -L/usr/local/lib -L/usr/local/pgsql/lib -lpq -lgrpc++_unsecure -lgrpc -lprotobuf -lpthread -ldl  -fsanitize=address
+LDFLAGS += -L/usr/local/lib -L/usr/local/pgsql/lib -lsqlpp-postgresql -lpq -lgrpc++_unsecure -lgrpc -lprotobuf -lpthread -ldl  -fsanitize=address
 PROTOC = protoc
 GRPC_CPP_PLUGIN = grpc_cpp_plugin
 GRPC_CPP_PLUGIN_PATH ?= `which $(GRPC_CPP_PLUGIN)`
@@ -41,7 +41,10 @@ PROTOS_PATH = ../protos
 
 vpath %.proto $(PROTOS_PATH)
 
-all: system-check article_client article_server
+all: system-check article_client article_server test_db
+
+test_db: article.pb.o article.grpc.pb.o db/articles_query.o test_db.o
+	$(CXX) $^ $(LDFLAGS) -o $@
 
 article_client: article.pb.o article.grpc.pb.o article_client.o
 	$(CXX) $^ $(LDFLAGS) -o $@
